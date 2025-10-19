@@ -24,6 +24,42 @@ app.get("/api/hello", function (req, res) {
   res.json({greeting: 'hello API'});
 });
 
+/* ===== Timestamp endpoint =====
+   This route handles:
+   - /api          -> current time
+   - /api/:date    -> provided date (either numeric timestamp or ISO string)
+*/
+app.get("/api/:date?", function (req, res) {
+  const dateString = req.params.date;
+  let date;
+
+  // 1) No parameter: return current time
+  if (!dateString) {
+    date = new Date();
+  } else {
+    // 2) If the parameter is digits only, treat as milliseconds timestamp
+    if (/^\d+$/.test(dateString)) {
+      // parseInt is safe here; Number(dateString) also works
+      date = new Date(parseInt(dateString));
+    } else {
+      // 3) Otherwise, attempt to parse as date string (e.g., "2015-12-25")
+      date = new Date(dateString);
+    }
+  }
+
+  // 4) If invalid, return error object expected by FCC
+  if (date.toString() === "Invalid Date") {
+    return res.json({ error: "Invalid Date" });
+  }
+
+  // 5) Valid date -> return unix (ms) and utc string
+  res.json({
+    unix: date.getTime(),
+    utc: date.toUTCString()
+  });
+});
+
+
 
 
 // Listen on port set in environment variable or default to 3000
